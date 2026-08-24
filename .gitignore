@@ -2,3 +2,5 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+.build_metadata.yaml
+.build_metadata.slices.yaml
