@@ -1,0 +1,9 @@
+scan_id: scan-2026-08-25-0102
+need_id: need_h7d2n5t8
+name: GapProbe
+version: v0.1.0
+build_dir: workspace/builds/gapprobe--h7d2n5t8
+plan_path: workspace/projects/scan-2026-08-25-0102/F-plan/top_k-winner-h7d2n5t8/mvp_plan.md
+plan_hash: e8808116a1d2559e72f59a4b3b28605993a8eb3581e2e5858b12a3e301b23dc1
+target_completeness: polished
+built_at: 2026-08-24T18:36:06.192031+00:00
