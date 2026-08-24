@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "name": "gapprobe",
+  "github": "https://github.com/SuperMarioYL/GapProbe",
+  "host": "gapprobe.lei6393.com",
+  "lang": { "primary": "zh", "toggle": true },
+  "accent": ["#6c7cf0", "#3d5afe", "#1a8acc"],
+  "hero": {
+    "eyebrow": { "zh": "本地 · 无需账号 · 一条命令", "en": "Local · No Account · One Command" },
+    "headline": {
+      "zh": "本地大模型"变笨了"?\n一条命令告诉你哪层配错了",
+      "en": "Your local model feels dumb?\nOne command tells you which layer is off"
+    },
+    "sub": {
+      "zh": "12 个行为探针对照每模型已知正确配置，把"感觉变笨"的差距归因到具体的配置层。",
+      "en": "12 behavioral probes diff against per-model known-good configs — attributing felt dumbness to a specific misconfiguration layer."
+    },
+    "command": "uvx gapprobe probe --endpoint http://localhost:8080"
+  },
+  "advantages": [
+    {
+      "title": { "zh": "定位到层，不是"什么都试试"", "en": "Pinpoint the layer, not \"try everything\"" },
+      "body": {
+        "zh": "不用再逐个试重量化、换上下文、调采样器。一句话告诉你损失出在 chat-template 还是 sampling，附带量化能力损失估计。",
+        "en": "Stop re-quantizing, swapping context, and tuning samplers one by one. One line tells you whether the loss is in chat-template or sampling, with a quantified capability-loss estimate."
+      },
+      "chips": [
+        "› 跨层归因 (chat-template + sampling)",
+        "› 量化损失百分比",
+        "› 一句话修复建议"
+      ]
+    },
+    {
+      "title": { "zh": "每模型已知正确配置", "en": "Per-model known-good registry" },
+      "body": {
+        "zh": "内置 Qwen3 和 DeepSeek 的正确配置基准：标准 chat-template 名称、标准采样参数、12 个探针的已知正确响应模式。",
+        "en": "Baked-in known-good reference data for Qwen3 and DeepSeek: canonical chat-template names, standard sampler defaults, and known-good probe response patterns."
+      },
+      "chips": [
+        "› Qwen3 + DeepSeek",
+        "› 12 个行为探针",
+        "› 开箱即用"
+      ]
+    },
+    {
+      "title": { "zh": "可截图的一句话结论", "en": "A screenshot-able one-line verdict" },
+      "body": {
+        "zh": "跑完探针直接输出一行结论，可以截图发帖——看起来是测量归因，不是"又一个 CLI"。",
+        "en": "After probing, it prints a single verdict line you can screenshot and post — it reads as measured attribution, not \"yet another CLI tool.\""
+      },
+      "chips": [
+        "› 一行结论",
+        "› 修复命令",
+        "› 可分享"
+      ]
+    },
+    {
+      "title": { "zh": "20 例基准测试验证", "en": "Validated by a 20-case bench" },
+      "body": {
+        "zh": "10 个错误配置 + 10 个正确配置，验证双层归因准确率远超随机猜测。",
+        "en": "10 mis-set + 10 correctly-set cases validate that 2-layer attribution accuracy far exceeds random guess."
+      },
+      "chips": [
+        "› 100% 准确率",
+        "› 超越随机基线",
+        "› 可复现"
+      ]
+    }
+  ],
+  "scene": { "kind": "particle-field" },
+  "cta": {
+    "headline": { "zh": "装上就能用", "en": "Install and go" },
+    "sub": { "zh": "免费 · 开源 · 只需要一个本地模型服务器", "en": "Free · open-source · just needs a local model server" },
+    "button": { "zh": "查看 GitHub", "en": "View on GitHub" }
+  },
+  "footer": { "tag": { "zh": "MIT 开源 · 由 SuperMarioYL 维护", "en": "MIT open-source · maintained by SuperMarioYL" } }
+}
