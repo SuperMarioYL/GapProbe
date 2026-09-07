@@ -1,0 +1,26 @@
+{
+  "version": "0.1.0",
+  "scope": "Offline deterministic attribution fixtures and registry inspection. Simulated probe results are not live-model accuracy or measured capability loss.",
+  "inputs": [
+    {
+      "path": "gapprobe/cases.py",
+      "sha256": "2dc0c1d477a6057356a5bd9b4f874d155618d87fac0c7867ff264a930dc1ff13"
+    },
+    {
+      "path": "examples/presentation_registry.py",
+      "sha256": "d702c28e6d87aff4ace375063ed15255a08d9620906e0dadc80f86682e7ad192"
+    }
+  ],
+  "steps": [
+    {
+      "command": "python -m gapprobe.cli bench",
+      "output": "           GapProbe 20-Case Attribution Bench            \n┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━┓\n┃ Case            ┃ Predicted     ┃ Expected      ┃ ✓/✗ ┃\n┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━┩\n│ mis_ct_1        │ chat_template │ chat_template │ ✓   │\n│ mis_ct_2        │ chat_template │ chat_template │ ✓   │\n│ mis_ct_3        │ chat_template │ chat_template │ ✓   │\n│ mis_ct_4        │ chat_template │ chat_template │ ✓   │\n│ mis_sp_1        │ sampling      │ sampling      │ ✓   │\n│ mis_sp_2        │ sampling      │ sampling      │ ✓   │\n│ mis_sp_3        │ sampling      │ sampling      │ ✓   │\n│ mis_sp_4        │ sampling      │ sampling      │ ✓   │\n│ mis_both_ct_dom │ chat_template │ chat_template │ ✓   │\n│ mis_both_sp_dom │ sampling      │ sampling      │ ✓   │\n│ clean_1         │ none          │ none          │ ✓   │\n│ clean_2         │ none          │ none          │ ✓   │\n│ clean_3         │ none          │ none          │ ✓   │\n│ clean_4         │ none          │ none          │ ✓   │\n│ clean_5         │ none          │ none          │ ✓   │\n│ clean_6         │ none          │ none          │ ✓   │\n│ clean_7         │ none          │ none          │ ✓   │\n│ clean_8         │ none          │ none          │ ✓   │\n│ clean_9         │ none          │ none          │ ✓   │\n│ clean_10        │ none          │ none          │ ✓   │\n└─────────────────┴───────────────┴───────────────┴─────┘\n\nAttribution accuracy: 20/20 (100%) — beats random guess (>50%)\n",
+      "exit_code": 0
+    },
+    {
+      "command": "python examples/presentation_registry.py",
+      "output": "{\n  \"matched_model\": \"qwen3\",\n  \"registry\": {\n    \"qwen3\": {\n      \"template\": \"qwen3\",\n      \"chat_probes\": 6,\n      \"sampling_probes\": 6,\n      \"temperature\": 0.7,\n      \"top_p\": 0.8\n    },\n    \"deepseek\": {\n      \"template\": \"deepseek\",\n      \"chat_probes\": 6,\n      \"sampling_probes\": 6,\n      \"temperature\": 0.7,\n      \"top_p\": 0.95\n    }\n  }\n}\n",
+      "exit_code": 0
+    }
+  ]
+}

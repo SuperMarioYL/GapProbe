@@ -1,77 +1,244 @@
 {
-  "schema": 1,
-  "name": "gapprobe",
+  "schema": 3,
+  "name": "GapProbe",
   "github": "https://github.com/SuperMarioYL/GapProbe",
   "host": "gapprobe.lei6393.com",
-  "lang": { "primary": "zh", "toggle": true },
-  "accent": ["#6c7cf0", "#3d5afe", "#1a8acc"],
+  "palette": "auto",
+  "lang": {
+    "primary": "en",
+    "toggle": true
+  },
+  "meta": {
+    "visual_profile": "neon-particle",
+    "content_version": "0.1.0",
+    "demo_source": "docs/demo-results.json"
+  },
   "hero": {
-    "eyebrow": { "zh": "本地 · 无需账号 · 一条命令", "en": "Local · No Account · One Command" },
+    "eyebrow": {
+      "zh": "对本地模型服务运行两组行为探针，分别查看 chat-template 与 sampling 的失败信号。",
+      "en": "Run two groups of behavioral probes against a local model endpoint and inspect chat-template and sampling failure signals separately."
+    },
     "headline": {
-      "zh": "本地大模型"变笨了"?\n一条命令告诉你哪层配错了",
-      "en": "Your local model feels dumb?\nOne command tells you which layer is off"
+      "zh": "模型输出异常，\n先看哪组探针失败",
+      "en": "Unexpected output?\nInspect the failing probes."
     },
     "sub": {
-      "zh": "12 个行为探针对照每模型已知正确配置，把"感觉变笨"的差距归因到具体的配置层。",
-      "en": "12 behavioral probes diff against per-model known-good configs — attributing felt dumbness to a specific misconfiguration layer."
+      "zh": "对本地模型服务运行两组行为探针，分别查看 chat-template 与 sampling 的失败信号。",
+      "en": "Run two groups of behavioral probes against a local model endpoint and inspect chat-template and sampling failure signals separately."
     },
-    "command": "uvx gapprobe probe --endpoint http://localhost:8080"
+    "href": "#quickstart",
+    "cta": {
+      "zh": "运行示例",
+      "en": "Run the example"
+    },
+    "ctaGithub": {
+      "zh": "查看源码",
+      "en": "View source"
+    }
+  },
+  "scene": {
+    "kind": "neon-graph",
+    "caption": {
+      "zh": "行为探针 · 分层结果",
+      "en": "BEHAVIORAL PROBES · LAYER RESULTS"
+    },
+    "fallback": "/assets/presentation/scene-dark.svg",
+    "fallbackLight": "/assets/presentation/scene-light.svg"
   },
   "advantages": [
     {
-      "title": { "zh": "定位到层，不是"什么都试试"", "en": "Pinpoint the layer, not \"try everything\"" },
-      "body": {
-        "zh": "不用再逐个试重量化、换上下文、调采样器。一句话告诉你损失出在 chat-template 还是 sampling，附带量化能力损失估计。",
-        "en": "Stop re-quantizing, swapping context, and tuning samplers one by one. One line tells you whether the loss is in chat-template or sampling, with a quantified capability-loss estimate."
+      "title": {
+        "zh": "分组看结果",
+        "en": "Separate result groups"
       },
-      "chips": [
-        "› 跨层归因 (chat-template + sampling)",
-        "› 量化损失百分比",
-        "› 一句话修复建议"
-      ]
+      "body": {
+        "zh": "模板与 sampling 的信号分别输出。",
+        "en": "Template and sampling signals are reported separately."
+      }
     },
     {
-      "title": { "zh": "每模型已知正确配置", "en": "Per-model known-good registry" },
-      "body": {
-        "zh": "内置 Qwen3 和 DeepSeek 的正确配置基准：标准 chat-template 名称、标准采样参数、12 个探针的已知正确响应模式。",
-        "en": "Baked-in known-good reference data for Qwen3 and DeepSeek: canonical chat-template names, standard sampler defaults, and known-good probe response patterns."
+      "title": {
+        "zh": "保留失败片段",
+        "en": "Keep failure snippets"
       },
-      "chips": [
-        "› Qwen3 + DeepSeek",
-        "› 12 个行为探针",
-        "› 开箱即用"
-      ]
+      "body": {
+        "zh": "失败探针附有原因和响应摘录。",
+        "en": "Failed probes retain reasons and response excerpts."
+      }
     },
     {
-      "title": { "zh": "可截图的一句话结论", "en": "A screenshot-able one-line verdict" },
-      "body": {
-        "zh": "跑完探针直接输出一行结论，可以截图发帖——看起来是测量归因，不是"又一个 CLI"。",
-        "en": "After probing, it prints a single verdict line you can screenshot and post — it reads as measured attribution, not \"yet another CLI tool.\""
+      "title": {
+        "zh": "离线复查规则",
+        "en": "Inspect rules offline"
       },
-      "chips": [
-        "› 一行结论",
-        "› 修复命令",
-        "› 可分享"
-      ]
-    },
-    {
-      "title": { "zh": "20 例基准测试验证", "en": "Validated by a 20-case bench" },
       "body": {
-        "zh": "10 个错误配置 + 10 个正确配置，验证双层归因准确率远超随机猜测。",
-        "en": "10 mis-set + 10 correctly-set cases validate that 2-layer attribution accuracy far exceeds random guess."
-      },
-      "chips": [
-        "› 100% 准确率",
-        "› 超越随机基线",
-        "› 可复现"
-      ]
+        "zh": "内置案例无需模型服务即可执行。",
+        "en": "Built-in cases run without a model service."
+      }
     }
   ],
-  "scene": { "kind": "particle-field" },
-  "cta": {
-    "headline": { "zh": "装上就能用", "en": "Install and go" },
-    "sub": { "zh": "免费 · 开源 · 只需要一个本地模型服务器", "en": "Free · open-source · just needs a local model server" },
-    "button": { "zh": "查看 GitHub", "en": "View on GitHub" }
+  "story": {
+    "intro": {
+      "title": {
+        "zh": "先保留信号，再决定改什么",
+        "en": "Keep the evidence before changing settings"
+      },
+      "body": {
+        "zh": "当本地模型输出不符合预期时，同时换模板、采样参数和量化方式很难知道哪一步有帮助。GapProbe 将固定行为检查分成两组，保留失败探针的响应片段，并按内置规则给出排查方向。",
+        "en": "When a local model responds unexpectedly, changing templates, sampling and quantization together obscures what helped. GapProbe separates fixed behavioral checks into two groups, retains response snippets for failed probes, and uses built-in rules to suggest where to investigate."
+      }
+    },
+    "sections": [
+      {
+        "title": {
+          "zh": "从输入到结果",
+          "en": "From input to result"
+        },
+        "body": {
+          "zh": "实际执行内置 20 个模拟归因案例和注册表检查，结果符合 20/20 预设期望。它检验规则实现，不是模型性能、真实配置诊断准确率或能力损失测量。",
+          "en": "The real run executes 20 simulated attribution cases and inspects the registry, matching 20/20 constructed expectations. It checks rule implementation, not model performance, real-world diagnosis accuracy or measured capability loss."
+        },
+        "image": {
+          "light": "/assets/presentation/process-light.svg",
+          "dark": "/assets/presentation/process-dark.svg",
+          "alt": {
+            "zh": "实际执行内置 20 个模拟归因案例和注册表检查，结果符合 20/20 预设期望。它检验规则实现，不是模型性能、真实配置诊断准确率或能力损失测量。",
+            "en": "The real run executes 20 simulated attribution cases and inspects the registry, matching 20/20 constructed expectations. It checks rule implementation, not model performance, real-world diagnosis accuracy or measured capability loss."
+          }
+        }
+      },
+      {
+        "title": {
+          "zh": "工作原理",
+          "en": "How it works"
+        },
+        "body": {
+          "zh": "ProbeEngine 从 /v1/models 识别注册表条目，再向 /v1/chat/completions 发固定请求。两个 layer 根据预期子串检查计算失败比例，registry 的线性系数生成估计值，verdict 汇总结果。离线 bench 直接使用模拟 ProbeResult，不连接模型。",
+          "en": "ProbeEngine identifies a registry entry through /v1/models, then sends fixed requests to /v1/chat/completions. Two layers calculate failure ratios from substring checks; registry coefficients convert them to estimates, and verdict assembles the result. The offline bench uses simulated ProbeResult objects without a model connection."
+        },
+        "image": {
+          "light": "/assets/presentation/architecture-light.svg",
+          "dark": "/assets/presentation/architecture-dark.svg",
+          "alt": {
+            "zh": "ProbeEngine 从 /v1/models 识别注册表条目，再向 /v1/chat/completions 发固定请求。两个 layer 根据预期子串检查计算失败比例，registry 的线性系数生成估计值，verdict 汇总结果。离线 bench 直接使用模拟 ProbeResult，不连接模型。",
+            "en": "ProbeEngine identifies a registry entry through /v1/models, then sends fixed requests to /v1/chat/completions. Two layers calculate failure ratios from substring checks; registry coefficients convert them to estimates, and verdict assembles the result. The offline bench uses simulated ProbeResult objects without a model connection."
+          }
+        }
+      },
+      {
+        "title": {
+          "zh": "能力与接入",
+          "en": "Capabilities and integration"
+        },
+        "body": {
+          "zh": "实时端点提供响应，内置注册表定义检查与估计系数，离线案例可验证汇总规则。三者不要混作同一类性能证据。",
+          "en": "Live endpoints supply responses, the registry defines checks and estimate coefficients, and offline cases exercise aggregation rules. These are distinct kinds of evidence."
+        },
+        "image": {
+          "light": "/assets/presentation/integrations-light.svg",
+          "dark": "/assets/presentation/integrations-dark.svg",
+          "alt": {
+            "zh": "实时端点提供响应，内置注册表定义检查与估计系数，离线案例可验证汇总规则。三者不要混作同一类性能证据。",
+            "en": "Live endpoints supply responses, the registry defines checks and estimate coefficients, and offline cases exercise aggregation rules. These are distinct kinds of evidence."
+          }
+        }
+      }
+    ],
+    "details": [
+      {
+        "title": {
+          "zh": "怎样理解百分比",
+          "en": "Interpreting percentages"
+        },
+        "body": {
+          "zh": "百分比来自固定线性系数，不是实测模型能力下降；请看具体失败响应。",
+          "en": "Percentages come from fixed linear coefficients, not measured capability decline; inspect the failed responses."
+        }
+      }
+    ]
   },
-  "footer": { "tag": { "zh": "MIT 开源 · 由 SuperMarioYL 维护", "en": "MIT open-source · maintained by SuperMarioYL" } }
+  "demo": {
+    "title": {
+      "zh": "实际运行结果",
+      "en": "Actual demo output"
+    },
+    "note": {
+      "zh": "实际执行内置 20 个模拟归因案例和注册表检查，结果符合 20/20 预设期望。它检验规则实现，不是模型性能、真实配置诊断准确率或能力损失测量。",
+      "en": "The real run executes 20 simulated attribution cases and inspects the registry, matching 20/20 constructed expectations. It checks rule implementation, not model performance, real-world diagnosis accuracy or measured capability loss."
+    },
+    "source": "https://github.com/SuperMarioYL/GapProbe/blob/main/docs/demo-results.json",
+    "steps": [
+      {
+        "label": {
+          "zh": "运行模拟案例",
+          "en": "Run simulated cases"
+        },
+        "body": {
+          "zh": "20 个构造案例全部符合其预设标签。",
+          "en": "All twenty constructed cases match their expected labels."
+        },
+        "command": "python -m gapprobe.cli bench",
+        "output": "           GapProbe 20-Case Attribution Bench            \n┏━━━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━━━━━━━━━━━┳━━━━━┓\n┃ Case            ┃ Predicted     ┃ Expected      ┃ ✓/✗ ┃\n┡━━━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━━━━━━━━━━━╇━━━━━┩\n│ mis_ct_1        │ chat_template │ chat_template │ ✓   │\n│ mis_ct_2        │ chat_template │ chat_template │ ✓   │\n│ mis_ct_3        │ chat_template │ chat_template │ ✓   │\n│ mis_ct_4        │ chat_template │ chat_template │ ✓   │\n│ mis_sp_1        │ sampling      │ sampling      │ ✓   │\n│ mis_sp_2        │ sampling      │ sampling      │ ✓   │\n│ mis_sp_3        │ sampling      │ sampling      │ ✓   │\n│ mis_sp_4        │ sampling      │ sampling      │ ✓   │\n│ mis_both_ct_dom │ chat_template │ chat_template │ ✓   │\n│ mis_both_sp_dom │ sampling      │ sampling      │ ✓   │\n│ clean_1         │ none          │ none          │ ✓   │\n│ clean_2         │ none          │ none          │ ✓   │\n│ clean_3         │ none          │ none          │ ✓   │\n│ clean_4         │ none          │ none          │ ✓   │\n│ clean_5         │ none          │ none          │ ✓   │\n│ clean_6         │ none          │ none          │ ✓   │\n│ clean_7         │ none          │ none          │ ✓   │\n│ clean_8         │ none          │ none          │ ✓   │\n│ clean_9         │ none          │ none          │ ✓   │\n│ clean_10        │ none          │ none          │ ✓   │\n└─────────────────┴───────────────┴───────────────┴─────┘\n\nAttribution accuracy: 20/20 (100%) — beats random guess (>50%)\n",
+        "image": "/assets/presentation/demo-0-light.svg",
+        "imageDark": "/assets/presentation/demo-0-dark.svg"
+      },
+      {
+        "label": {
+          "zh": "检查参考注册表",
+          "en": "Inspect registry settings"
+        },
+        "body": {
+          "zh": "查看实际模型匹配、探针数量与参考参数。",
+          "en": "Inspect actual model matching, probe counts and reference settings."
+        },
+        "command": "python examples/presentation_registry.py",
+        "output": "{\n  \"matched_model\": \"qwen3\",\n  \"registry\": {\n    \"qwen3\": {\n      \"template\": \"qwen3\",\n      \"chat_probes\": 6,\n      \"sampling_probes\": 6,\n      \"temperature\": 0.7,\n      \"top_p\": 0.8\n    },\n    \"deepseek\": {\n      \"template\": \"deepseek\",\n      \"chat_probes\": 6,\n      \"sampling_probes\": 6,\n      \"temperature\": 0.7,\n      \"top_p\": 0.95\n    }\n  }\n}\n",
+        "image": "/assets/presentation/demo-1-light.svg",
+        "imageDark": "/assets/presentation/demo-1-dark.svg"
+      }
+    ]
+  },
+  "quickstart": {
+    "title": {
+      "zh": "从完整输入开始",
+      "en": "Start with complete input"
+    },
+    "body": {
+      "zh": "需要 Python 3.12+。下面的 bench 与注册表检查完全离线；实时 probe 需要你已经启动的兼容端点。",
+      "en": "Requires Python 3.12+. The bench and registry inspection below are offline; live probes need an already running compatible endpoint."
+    },
+    "steps": [
+      {
+        "title": {
+          "zh": "安装",
+          "en": "Install"
+        },
+        "code": "git clone https://github.com/SuperMarioYL/GapProbe.git\ncd GapProbe\npython3 -m venv .venv\nsource .venv/bin/activate\npython -m pip install -e ."
+      },
+      {
+        "title": {
+          "zh": "运行自带示例",
+          "en": "Run the supplied example"
+        },
+        "code": "python -m gapprobe.cli bench\npython examples/presentation_registry.py"
+      }
+    ]
+  },
+  "limitations": [
+    {
+      "zh": "模拟 bench 的 100% 不能推广为真实模型归因准确率。",
+      "en": "A 100% simulated-bench result does not establish real-model attribution accuracy."
+    },
+    {
+      "zh": "“能力损失”是内置规则估计，没有在此任务中进行校准验证。",
+      "en": "Capability-loss values are built-in estimates without calibration validation in this task."
+    },
+    {
+      "zh": "子串匹配和固定请求不能唯一确定配置故障原因。",
+      "en": "Substring checks and fixed requests do not uniquely identify configuration faults."
+    }
+  ],
+  "footer": {
+    "tag": "0.1.0 · Python 3.12+ · MIT"
+  }
 }

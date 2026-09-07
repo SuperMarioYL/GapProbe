@@ -1,0 +1,94 @@
+{
+  "name": "GapProbe",
+  "tagline": "Inspect chat-template and sampling probe results separately.",
+  "architecture": {
+    "title": "Behavioral responses to layer summaries",
+    "nodes": [
+      {
+        "title": "Model registry",
+        "detail": "Reference settings + probes"
+      },
+      {
+        "title": "Probe engine",
+        "detail": "OpenAI-compatible HTTP"
+      },
+      {
+        "title": "Layer checks",
+        "detail": "chat_template + sampling"
+      },
+      {
+        "title": "Verdict",
+        "detail": "Rule-based estimates"
+      },
+      {
+        "title": "Offline cases",
+        "detail": "Simulated pass/fail masks"
+      }
+    ],
+    "edges": [
+      [
+        0,
+        1
+      ],
+      [
+        1,
+        2
+      ],
+      [
+        0,
+        2
+      ],
+      [
+        2,
+        3
+      ],
+      [
+        4,
+        2
+      ]
+    ]
+  },
+  "process": {
+    "title": "Inspect the offline attribution fixtures",
+    "steps": [
+      {
+        "title": "Load cases",
+        "detail": "20 supplied simulated cases"
+      },
+      {
+        "title": "Apply rules",
+        "detail": "Two layer failure ratios"
+      },
+      {
+        "title": "Inspect result",
+        "detail": "20/20 fixture expectations"
+      }
+    ],
+    "result": "20/20 on constructed attribution fixtures; not live-model accuracy."
+  },
+  "integrations": {
+    "title": "Current endpoint and fixture routes",
+    "items": [
+      {
+        "title": "Local endpoint",
+        "detail": "/v1/models + chat/completions"
+      },
+      {
+        "title": "Qwen3 registry",
+        "detail": "Reference template and sampler"
+      },
+      {
+        "title": "DeepSeek registry",
+        "detail": "Reference template and sampler"
+      },
+      {
+        "title": "Offline bench",
+        "detail": "20 simulated cases"
+      },
+      {
+        "title": "Console report",
+        "detail": "Evidence and rule-based estimate"
+      }
+    ]
+  }
+}
