@@ -104,6 +104,10 @@
           "alt": {
             "zh": "实际执行内置 20 个模拟归因案例和注册表检查，结果符合 20/20 预设期望。它检验规则实现，不是模型性能、真实配置诊断准确率或能力损失测量。",
             "en": "The real run executes 20 simulated attribution cases and inspects the registry, matching 20/20 constructed expectations. It checks rule implementation, not model performance, real-world diagnosis accuracy or measured capability loss."
+          },
+          "mobile": {
+            "light": "/assets/presentation/process-mobile-light.svg",
+            "dark": "/assets/presentation/process-mobile-dark.svg"
           }
         }
       },
@@ -122,6 +126,10 @@
           "alt": {
             "zh": "ProbeEngine 从 /v1/models 识别注册表条目，再向 /v1/chat/completions 发固定请求。两个 layer 根据预期子串检查计算失败比例，registry 的线性系数生成估计值，verdict 汇总结果。离线 bench 直接使用模拟 ProbeResult，不连接模型。",
             "en": "ProbeEngine identifies a registry entry through /v1/models, then sends fixed requests to /v1/chat/completions. Two layers calculate failure ratios from substring checks; registry coefficients convert them to estimates, and verdict assembles the result. The offline bench uses simulated ProbeResult objects without a model connection."
+          },
+          "mobile": {
+            "light": "/assets/presentation/architecture-mobile-light.svg",
+            "dark": "/assets/presentation/architecture-mobile-dark.svg"
           }
         }
       },
@@ -140,6 +148,10 @@
           "alt": {
             "zh": "实时端点提供响应，内置注册表定义检查与估计系数，离线案例可验证汇总规则。三者不要混作同一类性能证据。",
             "en": "Live endpoints supply responses, the registry defines checks and estimate coefficients, and offline cases exercise aggregation rules. These are distinct kinds of evidence."
+          },
+          "mobile": {
+            "light": "/assets/presentation/integrations-mobile-light.svg",
+            "dark": "/assets/presentation/integrations-mobile-dark.svg"
           }
         }
       }
