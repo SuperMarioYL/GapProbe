@@ -18,6 +18,27 @@ app = typer.Typer(
 )
 console = Console()
 
+_VALID_LAYERS = ("chat-template", "chat_template", "sampling")
+
+
+def _version_callback(value: bool) -> None:
+    if value:
+        typer.echo(f"gapprobe {__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def root(
+    version: bool = typer.Option(
+        None,
+        "--version",
+        callback=_version_callback,
+        is_eager=True,
+        help="Show version and exit.",
+    ),
+) -> None:
+    """Capability-gap diagnostician for locally-served CN open-weights models."""
+
 
 @app.command()
 def probe(
@@ -34,6 +55,12 @@ def probe(
     from gapprobe.verdict import assemble_verdict
 
     console.print(f"[dim]GapProbe v{__version__} — probing {endpoint}[/dim]")
+
+    if layer is not None and layer not in _VALID_LAYERS:
+        console.print(
+            f"[red]✗ Unknown --layer '{layer}'. Valid: chat-template | sampling[/red]"
+        )
+        raise typer.Exit(2)
 
     with ProbeEngine(endpoint) as engine:
         try:

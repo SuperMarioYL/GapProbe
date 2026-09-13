@@ -5,6 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Literal
 
+from gapprobe.registry import MISCONFIG_DIVERGENCE_THRESHOLD
+
 LayerName = Literal["chat_template", "sampling"]
 
 
@@ -19,7 +21,7 @@ class LayerVerdict:
 
     @property
     def is_misconfigured(self) -> bool:
-        return self.divergence_score > 0.3
+        return self.divergence_score > MISCONFIG_DIVERGENCE_THRESHOLD
 
 
 @dataclass
@@ -44,11 +46,20 @@ class AttributionVerdict:
         if not self.layers:
             self.one_liner = f"{self.model}: no probes ran — check endpoint {self.endpoint}"
             return
-        self.dominant_layer = max(self.layers, key=lambda v: v.est_capability_loss_pct).layer
         self.total_estimated_loss_pct = round(
             sum(v.est_capability_loss_pct for v in self.layers), 1
         )
-        dom = next(v for v in self.layers if v.layer == self.dominant_layer)
+        if self.total_estimated_loss_pct <= 0:
+            # No layer is misconfigured: naming a "dominant" culprit at ~0%
+            # loss would be a phantom diagnosis.
+            self.dominant_layer = ""
+            self.one_liner = (
+                f"{self.model}: no significant capability gap detected — "
+                f"configuration looks correct"
+            )
+            return
+        dom = max(self.layers, key=lambda v: v.est_capability_loss_pct)
+        self.dominant_layer = dom.layer
         detail = dom.evidence[0] if dom.evidence else "unspecified divergence"
         self.one_liner = (
             f"{self.model}: ~{int(self.total_estimated_loss_pct)}% capability loss "

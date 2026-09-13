@@ -23,9 +23,16 @@ class ProbeResult:
 class ProbeEngine:
     """Sends behavioral probes to a local OpenAI-compatible server."""
 
-    def __init__(self, endpoint: str, timeout: float = 30.0):
+    def __init__(
+        self,
+        endpoint: str,
+        timeout: float = 30.0,
+        transport: httpx.BaseTransport | None = None,
+    ):
         self.endpoint = endpoint.rstrip("/")
-        self.client = httpx.Client(timeout=timeout)
+        # `transport` lets tests serve canned /v1/models, /v1/chat/completions
+        # and /props responses via httpx.MockTransport without a live server.
+        self.client = httpx.Client(timeout=timeout, transport=transport)
         self.model_key: str | None = None
         self.model_id: str = ""
 
@@ -52,8 +59,11 @@ class ProbeEngine:
             "model": self.model_id,
             "messages": probe.messages,
             "max_tokens": 128,
-            "temperature": 0.0,  # deterministic for probe consistency
         }
+        if not probe.use_served_sampler:
+            # Deterministic for probe consistency. Sampling probes omit this so
+            # the server's configured default sampler applies.
+            payload["temperature"] = 0.0
         try:
             resp = self.client.post(
                 f"{self.endpoint}/v1/chat/completions",
@@ -86,6 +96,30 @@ class ProbeEngine:
             success=success,
             detail=detail,
         )
+
+    def fetch_served_defaults(self) -> dict[str, float] | None:
+        """Fetch the server's default sampler settings, when it exposes them.
+
+        llama.cpp's llama-server serves GET /props with a
+        default_generation_settings object carrying temperature / top_p /
+        repeat_penalty. Servers without /props (e.g. vLLM) or without the
+        field return None, and the sampling layer falls back to behavioral
+        probes only.
+        """
+        try:
+            resp = self.client.get(f"{self.endpoint}/props")
+            resp.raise_for_status()
+            settings = resp.json().get("default_generation_settings")
+        except Exception:
+            return None
+        if not isinstance(settings, dict):
+            return None
+        served = {
+            param: float(settings[param])
+            for param in ("temperature", "top_p", "repeat_penalty")
+            if isinstance(settings.get(param), (int, float))
+        }
+        return served or None
 
     def run_probes(self, probes: list[ProbeSpec]) -> list[ProbeResult]:
         """Run a list of probes with throttling."""

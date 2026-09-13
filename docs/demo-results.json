@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.0",
   "scope": "Offline deterministic attribution fixtures and registry inspection. Simulated probe results are not live-model accuracy or measured capability loss.",
   "inputs": [
     {

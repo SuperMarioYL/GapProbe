@@ -27,6 +27,10 @@ class ProbeSpec:
     check: str  # what to look for in the response
     expected_substring: str = ""  # canonical response must contain this
     expected_not_substring: str = ""  # canonical response must NOT contain this
+    # Sampling probes run without an explicit temperature so the server's
+    # configured default sampler applies (probing with temperature=0.0 would
+    # mask exactly the misconfiguration this layer exists to detect).
+    use_served_sampler: bool = False
 
 
 @dataclass
@@ -110,7 +114,11 @@ def _chat_template_probes() -> list[ProbeSpec]:
 
 
 def _sampling_probes() -> list[ProbeSpec]:
-    """Probes sensitive to temperature / top_p / repeat_penalty misconfiguration."""
+    """Probes sensitive to temperature / top_p / repeat_penalty misconfiguration.
+
+    All run with use_served_sampler=True so the server's configured default
+    sampler (not a probe-side temperature) shapes the responses.
+    """
     return [
         ProbeSpec(
             probe_id="sp_instruction_follow",
@@ -120,6 +128,7 @@ def _sampling_probes() -> list[ProbeSpec]:
             ],
             check="follows a precise format (high temp → rambling)",
             expected_substring="one two three",
+            use_served_sampler=True,
         ),
         ProbeSpec(
             probe_id="sp_repetition",
@@ -128,6 +137,7 @@ def _sampling_probes() -> list[ProbeSpec]:
             ],
             check="no excessive repetition (low repeat_penalty → loops)",
             expected_not_substring="hello hello hello hello hello",
+            use_served_sampler=True,
         ),
         ProbeSpec(
             probe_id="sp_creative_constraint",
@@ -135,6 +145,7 @@ def _sampling_probes() -> list[ProbeSpec]:
                 {"role": "user", "content": "Write a 2-sentence story about a cat. Exactly 2 sentences, no more."},
             ],
             check="respects length constraint (greedy temp → over-long or under-long)",
+            use_served_sampler=True,
         ),
         ProbeSpec(
             probe_id="sp_factual_recall",
@@ -143,6 +154,7 @@ def _sampling_probes() -> list[ProbeSpec]:
             ],
             check="correct factual answer (high temp → wrong)",
             expected_substring="4",
+            use_served_sampler=True,
         ),
         ProbeSpec(
             probe_id="sp_format_json",
@@ -151,6 +163,7 @@ def _sampling_probes() -> list[ProbeSpec]:
             ],
             check="exact format compliance (sampling noise → malformed JSON)",
             expected_substring='"result"',
+            use_served_sampler=True,
         ),
         ProbeSpec(
             probe_id="sp_code_block",
@@ -159,6 +172,7 @@ def _sampling_probes() -> list[ProbeSpec]:
             ],
             check="code is syntactically plausible (sampling noise → broken code)",
             expected_substring="def add",
+            use_served_sampler=True,
         ),
     ]
 
@@ -167,7 +181,9 @@ def _sampling_probes() -> list[ProbeSpec]:
 
 REGISTRY: dict[str, ModelEntry] = {
     "qwen3": ModelEntry(
-        model_id_patterns=["qwen3", "qwen-3", "qwen2.5", "Qwen3", "Qwen2.5"],
+        # Qwen2.5 deliberately NOT matched: it uses a different chat template,
+        # and routing it here would prescribe the qwen3 template as a fix.
+        model_id_patterns=["qwen3", "qwen-3"],
         canonical_chat_template="qwen3",
         canonical_sampler=SamplerDefaults(temperature=0.7, top_p=0.8, repeat_penalty=1.05),
         chat_template_probes=_chat_template_probes(),
@@ -176,7 +192,9 @@ REGISTRY: dict[str, ModelEntry] = {
         fix_hint_sampling="set temperature=0.7 top_p=0.8 repeat_penalty=1.05",
     ),
     "deepseek": ModelEntry(
-        model_id_patterns=["deepseek", "DeepSeek", "deepseek-r1", "deepseek-v3", "DeepSeek-V3"],
+        # match_model lowercases both sides, so one lowercase substring covers
+        # DeepSeek-V3 / DeepSeek-R1 / any casing variant.
+        model_id_patterns=["deepseek"],
         canonical_chat_template="deepseek",
         canonical_sampler=SamplerDefaults(temperature=0.7, top_p=0.95, repeat_penalty=1.0),
         chat_template_probes=_chat_template_probes(),
@@ -201,9 +219,16 @@ def get_entry(key: str) -> ModelEntry | None:
     return REGISTRY.get(key)
 
 
+# Divergence at or below this is within normal probe noise, not a
+# misconfiguration. calibrate_loss() and LayerVerdict.is_misconfigured both
+# key off this single threshold so "nonzero loss" and "misconfigured" can
+# never disagree.
+MISCONFIG_DIVERGENCE_THRESHOLD = 0.3
+
+
 def calibrate_loss(layer: str, divergence_score: float, key: str) -> float:
     """Convert a divergence score to an estimated capability loss percentage."""
-    if divergence_score <= 0:
+    if divergence_score <= MISCONFIG_DIVERGENCE_THRESHOLD:
         return 0.0
     entry = REGISTRY.get(key)
     if not entry:
