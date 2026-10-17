@@ -4,3 +4,5 @@ __pycache__/
 .pytest_cache/
 .build_metadata.yaml
 .build_metadata.slices.yaml
+
+/dist/
