@@ -182,3 +182,49 @@ class TestSamplingLayer:
         verdict = SamplingLayer()._build_verdict(results, "qwen3")
         assert verdict.divergence_score == 0.0
         assert verdict.evidence == ["all sampling probes passed — sampler appears correctly configured"]
+
+
+class TestServedMismatchFloor:
+    """A confirmed served-default mismatch is misconfiguration, not noise.
+
+    Fail-before (v0.2.0): one mismatch among 6 probes + 3 compared params
+    diluted to divergence 1/9 = 0.111 — below the 0.3 threshold — so the run
+    printed "no significant capability gap detected" next to its own evidence
+    naming the mismatched parameter.
+    """
+
+    def _run_with_props(self, props):
+        engine = ProbeEngine("http://mock", transport=httpx.MockTransport(_handler([], props_body=props)))
+        verdict = SamplingLayer().run(engine, REGISTRY["qwen3"], "qwen3")
+        engine.close()
+        return verdict
+
+    def test_single_mismatch_flags_misconfiguration(self):
+        props = {"default_generation_settings": {"temperature": 1.5, "top_p": 0.8, "repeat_penalty": 1.05}}
+        verdict = self._run_with_props(props)
+        assert verdict.divergence_score >= 0.4
+        assert verdict.est_capability_loss_pct > 0
+        assert verdict.is_misconfigured is True
+        assert "temperature" in verdict.evidence[0]
+
+    def test_floor_not_applied_when_defaults_match(self):
+        props = {"default_generation_settings": {"temperature": 0.7, "top_p": 0.8, "repeat_penalty": 1.05}}
+        verdict = self._run_with_props(props)
+        assert verdict.divergence_score == 0.0
+        assert verdict.is_misconfigured is False
+
+    def test_floor_never_lowers_a_higher_score(self):
+        # Existing 4/9 scenario (3 failed probes + 1 mismatch): the floor only
+        # ever raises the divergence, never lowers it.
+        props = {"default_generation_settings": {"temperature": 1.5, "top_p": 0.8, "repeat_penalty": 1.05}}
+        failing = {
+            "Reply with exactly three words: one two three",
+            "What is 2+2? Reply with ONLY the number.",
+            'Reply with this exact JSON: {"result": true}. Nothing else.',
+        }
+        engine = ProbeEngine(
+            "http://mock", transport=httpx.MockTransport(_handler([], props_body=props, fail_contents=failing))
+        )
+        verdict = SamplingLayer().run(engine, REGISTRY["qwen3"], "qwen3")
+        engine.close()
+        assert verdict.divergence_score == round(4 / 9, 3)

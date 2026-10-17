@@ -16,7 +16,7 @@ from gapprobe import __version__
 from gapprobe.cli import app
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-EXPECTED = "0.2.0"
+EXPECTED = "0.3.0"
 RELEASES = "https://github.com/SuperMarioYL/GapProbe/releases/tag"
 
 runner = CliRunner()
@@ -53,6 +53,7 @@ def test_changelog_has_current_section_and_link_refs():
     assert f"## [{EXPECTED}] —" in changelog
     assert f"[{EXPECTED}]: {RELEASES}/v{EXPECTED}" in changelog
     assert f"[0.1.0]: {RELEASES}/v0.1.0" in changelog
+    assert f"[0.2.0]: {RELEASES}/v0.2.0" in changelog
     assert (
         f"[Unreleased]: https://github.com/SuperMarioYL/GapProbe/compare/v{EXPECTED}...HEAD"
         in changelog

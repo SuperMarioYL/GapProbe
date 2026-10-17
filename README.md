@@ -9,7 +9,7 @@
 
 **Run two groups of behavioral probes against a local model endpoint and inspect chat-template and sampling failure signals separately.**
 
-`v0.2.0` · `Python 3.12+` · [MIT](LICENSE)
+`v0.3.0` · `Python 3.12+` · [MIT](LICENSE)
 
 [Website](https://gapprobe.lei6393.com) · [Demo record](docs/demo-results.json)
 
@@ -143,7 +143,7 @@ Live endpoints supply responses, the registry defines checks and estimate coeffi
 
 ## Configuration
 
-Each registry group has six probes. Chat-template probes fix temperature=0.0 for determinism; sampling probes omit it so the server's default sampler applies. All requests set max_tokens=128, run sequentially, and pause 0.3 seconds between probes; this is not a parameter-sweep experiment. When the server exposes default sampler settings (llama.cpp `/props`), they are compared against the registry's canonical sampler. Timeouts and HTTP failures also become failure signals, so inspect endpoint health first.
+Each registry group has six probes. Chat-template probes fix temperature=0.0 for determinism; sampling probes omit it so the server's default sampler applies. All requests set max_tokens=128, run sequentially, and pause 0.3 seconds between probes; this is not a parameter-sweep experiment. When the server exposes default sampler settings (llama.cpp `/props`), they are compared against the registry's canonical sampler — a confirmed mismatch flags the layer misconfigured even when every behavioral probe passes. If every probe fails at the HTTP/transport level (connection errors, 4xx/5xx), the run is reported as a probe-run failure rather than attributed to the model configuration; fix the server first.
 
 ## Roadmap and scope
 

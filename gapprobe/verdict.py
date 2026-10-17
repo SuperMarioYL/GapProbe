@@ -18,10 +18,32 @@ class LayerVerdict:
     divergence_score: float  # 0..1, distance from known-good
     est_capability_loss_pct: float  # 0..100, calibrated per layer
     evidence: list[str] = field(default_factory=list)
+    # True when every probe failed at the HTTP/transport level: no behavioral
+    # check ran, so the result cannot attribute anything to the model config.
+    inconclusive: bool = False
 
     @property
     def is_misconfigured(self) -> bool:
-        return self.divergence_score > MISCONFIG_DIVERGENCE_THRESHOLD
+        return not self.inconclusive and self.divergence_score > MISCONFIG_DIVERGENCE_THRESHOLD
+
+
+def transport_failure_verdict(layer: LayerName, failed_probe_count: int) -> LayerVerdict:
+    """Verdict for a layer whose every probe failed at the HTTP/transport level.
+
+    No behavioral check ran, so the server's failures must not be scored as
+    model misconfiguration — the honest result is "inconclusive, fix the
+    server first".
+    """
+    return LayerVerdict(
+        layer=layer,
+        divergence_score=0.0,
+        est_capability_loss_pct=0.0,
+        inconclusive=True,
+        evidence=[
+            f"all {failed_probe_count} probes failed with HTTP/transport errors — "
+            "the server is failing requests, not attributable to model configuration"
+        ],
+    )
 
 
 @dataclass
@@ -45,6 +67,15 @@ class AttributionVerdict:
     def _assemble(self) -> None:
         if not self.layers:
             self.one_liner = f"{self.model}: no probes ran — check endpoint {self.endpoint}"
+            return
+        if all(v.inconclusive for v in self.layers):
+            # Every probe died at the HTTP level: no layer was actually
+            # probed, so neither a loss estimate nor a layer attribution
+            # would be honest.
+            self.one_liner = (
+                f"{self.model}: probe run failed — server errors on every "
+                f"probe at {self.endpoint}; resolve those first, then re-run"
+            )
             return
         self.total_estimated_loss_pct = round(
             sum(v.est_capability_loss_pct for v in self.layers), 1

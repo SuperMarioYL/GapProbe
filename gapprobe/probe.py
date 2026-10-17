@@ -18,6 +18,14 @@ class ProbeResult:
     response_text: str
     success: bool  # did the probe check pass?
     detail: str = ""
+    # The probe never reached a behavioral check (connection error, HTTP 4xx/5xx,
+    # unparseable body): a server-side failure, not a model-behavior signal.
+    transport_error: bool = False
+
+
+def all_transport_errors(results: list[ProbeResult]) -> bool:
+    """True when every probe failed at the HTTP/transport level."""
+    return bool(results) and all(r.transport_error for r in results)
 
 
 class ProbeEngine:
@@ -73,11 +81,15 @@ class ProbeEngine:
             data = resp.json()
             text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
         except Exception as exc:
+            # First line only: httpx.HTTPStatusError's message spans several
+            # lines (including an MDN explanation URL) and would otherwise
+            # leak into the one-line verdict.
             return ProbeResult(
                 probe_id=probe.probe_id,
                 response_text="",
                 success=False,
-                detail=f"HTTP error: {exc}",
+                detail=f"HTTP error: {str(exc).splitlines()[0]}",
+                transport_error=True,
             )
 
         text = text.strip()

@@ -94,7 +94,12 @@ def probe(
             _print_layer_table(sp)
 
     # Assemble cross-layer verdict
-    suggested_fix = " | ".join(h for h, v in zip(fix_hints, layer_verdicts) if v.is_misconfigured)
+    if layer_verdicts and all(v.inconclusive for v in layer_verdicts):
+        # Every probe died at the HTTP level: prescribing template/sampler
+        # fixes would misattribute a server failure to the model config.
+        suggested_fix = "resolve server errors, then re-run gapprobe probe"
+    else:
+        suggested_fix = " | ".join(h for h, v in zip(fix_hints, layer_verdicts) if v.is_misconfigured)
     if not suggested_fix:
         suggested_fix = "no fix needed — configuration looks correct"
 

@@ -2,9 +2,14 @@
 
 from __future__ import annotations
 
-from gapprobe.probe import ProbeEngine, ProbeResult
-from gapprobe.registry import ModelEntry, SamplerDefaults, calibrate_loss
-from gapprobe.verdict import LayerVerdict
+from gapprobe.probe import ProbeEngine, ProbeResult, all_transport_errors
+from gapprobe.registry import (
+    SERVED_MISMATCH_FLOOR,
+    ModelEntry,
+    SamplerDefaults,
+    calibrate_loss,
+)
+from gapprobe.verdict import LayerVerdict, transport_failure_verdict
 
 _SAMPLER_PARAMS = ("temperature", "top_p", "repeat_penalty")
 
@@ -52,6 +57,12 @@ class SamplingLayer:
         served_evidence = None
         if served is not None:
             served_evidence = diff_sampler_defaults(served, entry.canonical_sampler)
+        if all_transport_errors(results) and not (served_evidence and served_evidence[0]):
+            # No behavioral check ran and /props agrees with the canonical
+            # sampler (or is unavailable): nothing here attributes to the
+            # model configuration. A served mismatch still goes through
+            # _build_verdict — it is direct evidence on its own.
+            return transport_failure_verdict(self.LAYER_NAME, len(results))
         return self._build_verdict(results, model_key, served_evidence)
 
     def _build_verdict(
@@ -83,6 +94,12 @@ class SamplingLayer:
         if not evidence:
             evidence = ["all sampling probes passed — sampler appears correctly configured"]
         divergence = misses / denom if denom else 0.0
+        if served_evidence is not None and served_evidence[0]:
+            # A served default that differs from canonical is the
+            # misconfiguration observed directly, not probe noise — it must
+            # not be diluted below the misconfiguration threshold by passing
+            # behavioral probes.
+            divergence = max(divergence, SERVED_MISMATCH_FLOOR)
         loss_pct = calibrate_loss(self.LAYER_NAME, divergence, model_key)
         return LayerVerdict(
             layer=self.LAYER_NAME,

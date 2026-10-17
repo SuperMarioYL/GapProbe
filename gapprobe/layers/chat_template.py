@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
-from gapprobe.probe import ProbeEngine, ProbeResult
+from gapprobe.probe import ProbeEngine, ProbeResult, all_transport_errors
 from gapprobe.registry import ModelEntry, calibrate_loss
-from gapprobe.verdict import LayerVerdict
+from gapprobe.verdict import LayerVerdict, transport_failure_verdict
 
 
 class ChatTemplateLayer:
@@ -15,6 +15,8 @@ class ChatTemplateLayer:
     def run(self, engine: ProbeEngine, entry: ModelEntry, model_key: str) -> LayerVerdict:
         probes = entry.chat_template_probes
         results: list[ProbeResult] = engine.run_probes(probes)
+        if all_transport_errors(results):
+            return transport_failure_verdict(self.LAYER_NAME, len(results))
         return self._build_verdict(results, model_key)
 
     def _build_verdict(

@@ -9,7 +9,7 @@
 
 **对本地模型服务运行两组行为探针，分别查看 chat-template 与 sampling 的失败信号。**
 
-`v0.2.0` · `Python 3.12+` · [MIT](LICENSE)
+`v0.3.0` · `Python 3.12+` · [MIT](LICENSE)
 
 [Website](https://gapprobe.lei6393.com) · [Demo record](docs/demo-results.json)
 
@@ -143,7 +143,7 @@ $ python examples/presentation_registry.py
 
 ## 配置
 
-注册表每组各 6 个探针。chat-template 探针固定 temperature=0.0 以保证确定性；采样探针不带 temperature，按服务器默认采样参数运行。所有请求 max_tokens=128，逐个发送并暂停 0.3 秒；不是对 sampler 参数进行扫描实验。当服务器暴露默认采样设置（llama.cpp `/props`）时，会与注册表的 canonical sampler 对比。端点超时或 HTTP 失败也会进入失败信号，排查时需先确认服务健康。
+注册表每组各 6 个探针。chat-template 探针固定 temperature=0.0 以保证确定性；采样探针不带 temperature，按服务器默认采样参数运行。所有请求 max_tokens=128，逐个发送并暂停 0.3 秒；不是对 sampler 参数进行扫描实验。当服务器暴露默认采样设置（llama.cpp `/props`）时，会与注册表的 canonical sampler 对比；确认的偏差即使所有行为探针通过也会判定该层配置错误。若所有探针都在 HTTP/传输层失败（连接错误、4xx/5xx），本次运行会报告为探测失败，而不归因于模型配置；应先修复服务器。
 
 ## 路线图与范围
 

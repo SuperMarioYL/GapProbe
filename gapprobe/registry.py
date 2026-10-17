@@ -225,6 +225,12 @@ def get_entry(key: str) -> ModelEntry | None:
 # never disagree.
 MISCONFIG_DIVERGENCE_THRESHOLD = 0.3
 
+# Behavioral probes are noisy, hence the threshold above. A served default
+# that differs from the canonical registry is not noise — it is the
+# misconfiguration observed directly — so any confirmed mismatch raises the
+# sampling divergence to at least this floor, which sits above the threshold.
+SERVED_MISMATCH_FLOOR = 0.4
+
 
 def calibrate_loss(layer: str, divergence_score: float, key: str) -> float:
     """Convert a divergence score to an estimated capability loss percentage."""

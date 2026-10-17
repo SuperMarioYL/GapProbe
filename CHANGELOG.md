@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.0] — 2026-10-18
+
+### Fixed
+- A served sampler default that differs from the canonical registry is no longer diluted below the misconfiguration threshold by passing behavioral probes: any confirmed `/props` mismatch (e.g. served `temperature=1.5` vs canonical `0.7`) now flags the sampling layer misconfigured with its calibrated loss, instead of printing "no significant capability gap detected" in the same run whose evidence names the mismatch.
+- Server-side HTTP failures on `/v1/chat/completions` are no longer scored as model misconfiguration: when every probe in a run fails at the transport level (connection errors, 4xx/5xx), the verdict reports "probe run failed — resolve server errors first" instead of a fabricated "~N% capability loss" with template/sampler fix hints. Mixed runs keep behavioral scoring. Transport-error evidence is compacted to a single line, so the multi-line MDN explanation URL no longer leaks into the screenshot-able one-liner.
+
 ## [0.2.0] — 2026-09-14
 
 ### Fixed
@@ -31,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI: `gapprobe probe --endpoint <url>` prints a screenshot-able one-line verdict; `gapprobe bench` runs the 20-case bench.
 - Bilingual README (中文 + English).
 
-[Unreleased]: https://github.com/SuperMarioYL/GapProbe/compare/v0.2.0...HEAD
+[Unreleased]: https://github.com/SuperMarioYL/GapProbe/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/SuperMarioYL/GapProbe/releases/tag/v0.3.0
 [0.2.0]: https://github.com/SuperMarioYL/GapProbe/releases/tag/v0.2.0
 [0.1.0]: https://github.com/SuperMarioYL/GapProbe/releases/tag/v0.1.0
