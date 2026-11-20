@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "gapprobe"
-version = "0.3.0"
+version = "0.4.0"
 description = "Capability-gap diagnostician for locally-served CN open-weights models"
 readme = "README.md"
 license = "MIT"

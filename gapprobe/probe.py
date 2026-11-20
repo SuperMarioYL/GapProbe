@@ -28,6 +28,42 @@ def all_transport_errors(results: list[ProbeResult]) -> bool:
     return bool(results) and all(r.transport_error for r in results)
 
 
+def _message_text(message: object) -> str | None:
+    """Return a completion message's text, or None when it carries none.
+
+    "content" is a string in the classic OpenAI chat response, None for a legal
+    tool-calling reply, and a list of {"type": "text", "text": ...} parts in the
+    newer format. Anything else has no text to check against.
+    """
+    if not isinstance(message, dict):
+        return None
+    content = message.get("content")
+    if isinstance(content, str):
+        return content
+    if isinstance(content, list):
+        parts = [
+            part["text"]
+            for part in content
+            if isinstance(part, dict) and isinstance(part.get("text"), str)
+        ]
+        return "".join(parts) if parts else None
+    return None
+
+
+def _completion_text(data: object) -> str | None:
+    """Return the first choice's message text, or None for an unusable body.
+
+    A 200 response with no choices (gateway error envelope) or no message text
+    never reached a behavioral check, so it must not be scored as one.
+    """
+    if not isinstance(data, dict):
+        return None
+    choices = data.get("choices")
+    if not isinstance(choices, list) or not choices:
+        return None
+    return _message_text(choices[0].get("message"))
+
+
 class ProbeEngine:
     """Sends behavioral probes to a local OpenAI-compatible server."""
 
@@ -49,17 +85,23 @@ class ProbeEngine:
         resp = self.client.get(f"{self.endpoint}/v1/models")
         resp.raise_for_status()
         data = resp.json()
-        models = data.get("data", [])
+        models = data.get("data") or []
         if not models:
             raise RuntimeError("No models returned from /v1/models")
-        self.model_id = models[0].get("id", "")
-        self.model_key = match_model(self.model_id)
-        if self.model_key is None:
-            raise RuntimeError(
-                f"Model '{self.model_id}' not in registry. "
-                f"v0.1 supports Qwen3 + DeepSeek only."
-            )
-        return self.model_key
+        # OpenAI facades (LiteLLM, Ollama) and multi-model servers list several
+        # ids; the first one is not necessarily a model we know.
+        served = [m.get("id", "") for m in models if isinstance(m, dict)]
+        for model_id in served:
+            key = match_model(model_id)
+            if key is not None:
+                self.model_id = model_id
+                self.model_key = key
+                return key
+        raise RuntimeError(
+            f"No supported model served at {self.endpoint}/v1/models "
+            f"(served: {', '.join(served) or 'none'}). "
+            "Supported families: Qwen3, DeepSeek."
+        )
 
     def run_probe(self, probe: ProbeSpec) -> ProbeResult:
         """Send a single behavioral probe and check the response."""
@@ -79,7 +121,6 @@ class ProbeEngine:
             )
             resp.raise_for_status()
             data = resp.json()
-            text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
         except Exception as exc:
             # First line only: httpx.HTTPStatusError's message spans several
             # lines (including an MDN explanation URL) and would otherwise
@@ -92,6 +133,15 @@ class ProbeEngine:
                 transport_error=True,
             )
 
+        text = _completion_text(data)
+        if text is None:
+            return ProbeResult(
+                probe_id=probe.probe_id,
+                response_text="",
+                success=False,
+                detail="malformed completion response: no usable choice/content",
+                transport_error=True,
+            )
         text = text.strip()
         success = True
         detail = ""

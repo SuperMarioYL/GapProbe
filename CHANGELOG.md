@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.0] — 2026-11-21
+
+### Fixed
+- Probe runs no longer crash on a legal non-string completion payload: a tool-calling reply (`"content": null`) or a text-parts list is normalised (null → no text, parts concatenated) instead of raising `AttributeError` out of the probe and aborting the whole run.
+- A 200 response with no usable choice or message (gateway / out-of-memory error envelope) is reported as a protocol failure and the layer is inconclusive, instead of being scored as a failed behavioral probe — previously such a body produced divergence 1.0 and a ~47% estimated capability loss from a response the model never gave.
+- Model detection scans every id in `/v1/models` and probes the first registry-supported one, so a supported model listed after an unrelated id on a multi-model endpoint or OpenAI proxy is no longer rejected as "not in registry"; when nothing is supported, the error names the served ids.
+- `gapprobe bench` exits non-zero when attribution does not beat random guess (>50%), so the CI bench step can fail; previously it printed "FAILS random guess" and still exited 0.
+
 ## [0.3.0] — 2026-10-18
 
 ### Fixed
@@ -37,7 +45,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI: `gapprobe probe --endpoint <url>` prints a screenshot-able one-line verdict; `gapprobe bench` runs the 20-case bench.
 - Bilingual README (中文 + English).
 
-[Unreleased]: https://github.com/SuperMarioYL/GapProbe/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/SuperMarioYL/GapProbe/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/SuperMarioYL/GapProbe/releases/tag/v0.4.0
 [0.3.0]: https://github.com/SuperMarioYL/GapProbe/releases/tag/v0.3.0
 [0.2.0]: https://github.com/SuperMarioYL/GapProbe/releases/tag/v0.2.0
 [0.1.0]: https://github.com/SuperMarioYL/GapProbe/releases/tag/v0.1.0

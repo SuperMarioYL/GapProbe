@@ -46,3 +46,17 @@ class TestBenchCommand:
         result = runner.invoke(app, ["bench"])
         assert result.exit_code == 0
         assert "20/20" in result.output
+
+    def test_bench_exits_nonzero_when_it_fails_the_criterion(self, monkeypatch):
+        # The bench is the plan's kill switch: printing "FAILS" while exiting 0
+        # makes the CI gate decorative.
+        monkeypatch.setattr("gapprobe.cases.run_bench", lambda: (9, 20, []))
+        result = runner.invoke(app, ["bench"])
+        assert result.exit_code == 1
+        assert "FAILS" in result.output
+
+    def test_bench_exits_zero_when_it_beats_random_guess(self, monkeypatch):
+        monkeypatch.setattr("gapprobe.cases.run_bench", lambda: (20, 20, []))
+        result = runner.invoke(app, ["bench"])
+        assert result.exit_code == 0
+        assert "beats" in result.output

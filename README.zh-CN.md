@@ -9,7 +9,7 @@
 
 **对本地模型服务运行两组行为探针，分别查看 chat-template 与 sampling 的失败信号。**
 
-`v0.3.0` · `Python 3.12+` · [MIT](LICENSE)
+`v0.4.0` · `Python 3.12+` · [MIT](LICENSE)
 
 [Website](https://gapprobe.lei6393.com) · [Demo record](docs/demo-results.json)
 
@@ -51,11 +51,11 @@ python -m gapprobe.cli bench
 python examples/presentation_registry.py
 ```
 
-bench 的完整输入随 cases.py 提供，注册表检查脚本位于 [examples/presentation_registry.py](examples/presentation_registry.py)。
+bench 的完整输入随 cases.py 提供，注册表检查脚本位于 [examples/presentation_registry.py](examples/presentation_registry.py)。当归因结果未能超过随机猜测时，`bench` 以非零状态退出，因此可用于 CI 门禁。
 
 ## 使用
 
-`python -m gapprobe.cli probe --endpoint http://localhost:8080` 运行两组探针；`--layer chat-template` 或 `--layer sampling` 可只运行一组。它不会启动服务器或自动修改参数。采样探针在服务器默认采样参数下运行；当服务器暴露默认值（llama.cpp `/props`）时，会与注册表的 canonical 采样配置对比，并在证据中点名不匹配的参数。
+`python -m gapprobe.cli probe --endpoint http://localhost:8080` 运行两组探针；`--layer chat-template` 或 `--layer sampling` 可只运行一组。它不会启动服务器或自动修改参数。模型识别会扫描 `/v1/models` 列表并探测注册表支持的第一个 id，因此多模型端点与 OpenAI 代理在提供 Qwen3 或 DeepSeek 时同样可用。采样探针在服务器默认采样参数下运行；当服务器暴露默认值（llama.cpp `/props`）时，会与注册表的 canonical 采样配置对比，并在证据中点名不匹配的参数。
 
 ## 实际 Demo
 
@@ -143,7 +143,7 @@ $ python examples/presentation_registry.py
 
 ## 配置
 
-注册表每组各 6 个探针。chat-template 探针固定 temperature=0.0 以保证确定性；采样探针不带 temperature，按服务器默认采样参数运行。所有请求 max_tokens=128，逐个发送并暂停 0.3 秒；不是对 sampler 参数进行扫描实验。当服务器暴露默认采样设置（llama.cpp `/props`）时，会与注册表的 canonical sampler 对比；确认的偏差即使所有行为探针通过也会判定该层配置错误。若所有探针都在 HTTP/传输层失败（连接错误、4xx/5xx），本次运行会报告为探测失败，而不归因于模型配置；应先修复服务器。
+注册表每组各 6 个探针。chat-template 探针固定 temperature=0.0 以保证确定性；采样探针不带 temperature，按服务器默认采样参数运行。所有请求 max_tokens=128，逐个发送并暂停 0.3 秒；不是对 sampler 参数进行扫描实验。当服务器暴露默认采样设置（llama.cpp `/props`）时，会与注册表的 canonical sampler 对比；确认的偏差即使所有行为探针通过也会判定该层配置错误。若补全消息没有可用文本（例如 `content: null` 的工具调用回复，或没有 choice 的 200 错误响应体），会报告为协议失败并将该层标记为无法判定，而不是计为一次行为探针失败。若所有探针都在 HTTP/传输层失败（连接错误、4xx/5xx），本次运行会报告为探测失败，而不归因于模型配置；应先修复服务器。
 
 ## 路线图与范围
 

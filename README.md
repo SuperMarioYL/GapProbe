@@ -9,7 +9,7 @@
 
 **Run two groups of behavioral probes against a local model endpoint and inspect chat-template and sampling failure signals separately.**
 
-`v0.3.0` · `Python 3.12+` · [MIT](LICENSE)
+`v0.4.0` · `Python 3.12+` · [MIT](LICENSE)
 
 [Website](https://gapprobe.lei6393.com) · [Demo record](docs/demo-results.json)
 
@@ -51,11 +51,11 @@ python -m gapprobe.cli bench
 python examples/presentation_registry.py
 ```
 
-The bench inputs are shipped in cases.py; the registry inspection script is [examples/presentation_registry.py](examples/presentation_registry.py).
+The bench inputs are shipped in cases.py; the registry inspection script is [examples/presentation_registry.py](examples/presentation_registry.py). `bench` exits non-zero when attribution does not beat random guess, so it can gate CI.
 
 ## Usage
 
-python -m gapprobe.cli probe --endpoint http://localhost:8080 runs both probe groups. Use --layer chat-template or --layer sampling for one group. It neither starts the server nor changes its settings. Sampling probes run under the server's configured default sampler; when the server exposes its defaults (llama.cpp `/props`), they are diffed against the canonical registry and mismatched parameters are named in the evidence.
+python -m gapprobe.cli probe --endpoint http://localhost:8080 runs both probe groups. Use --layer chat-template or --layer sampling for one group. It neither starts the server nor changes its settings. Model detection scans the `/v1/models` list and probes the first id the registry supports, so multi-model endpoints and OpenAI proxies work when Qwen3 or DeepSeek is among the served ids. Sampling probes run under the server's configured default sampler; when the server exposes its defaults (llama.cpp `/props`), they are diffed against the canonical registry and mismatched parameters are named in the evidence.
 
 ## Recorded demo
 
@@ -143,7 +143,7 @@ Live endpoints supply responses, the registry defines checks and estimate coeffi
 
 ## Configuration
 
-Each registry group has six probes. Chat-template probes fix temperature=0.0 for determinism; sampling probes omit it so the server's default sampler applies. All requests set max_tokens=128, run sequentially, and pause 0.3 seconds between probes; this is not a parameter-sweep experiment. When the server exposes default sampler settings (llama.cpp `/props`), they are compared against the registry's canonical sampler — a confirmed mismatch flags the layer misconfigured even when every behavioral probe passes. If every probe fails at the HTTP/transport level (connection errors, 4xx/5xx), the run is reported as a probe-run failure rather than attributed to the model configuration; fix the server first.
+Each registry group has six probes. Chat-template probes fix temperature=0.0 for determinism; sampling probes omit it so the server's default sampler applies. All requests set max_tokens=128, run sequentially, and pause 0.3 seconds between probes; this is not a parameter-sweep experiment. When the server exposes default sampler settings (llama.cpp `/props`), they are compared against the registry's canonical sampler — a confirmed mismatch flags the layer misconfigured even when every behavioral probe passes. A completion whose message carries no usable text (a tool-calling reply with `content: null`, or a 200 error envelope with no choice) is reported as a protocol failure and makes the layer inconclusive, rather than counting as a failed behavioral probe. If every probe fails at the HTTP/transport level (connection errors, 4xx/5xx), the run is reported as a probe-run failure rather than attributed to the model configuration; fix the server first.
 
 ## Roadmap and scope
 

@@ -10,7 +10,7 @@
   },
   "meta": {
     "visual_profile": "neon-particle",
-    "content_version": "0.3.0",
+    "content_version": "0.4.0",
     "demo_source": "docs/demo-results.json"
   },
   "hero": {
@@ -74,6 +74,16 @@
       "body": {
         "zh": "内置案例无需模型服务即可执行。",
         "en": "Built-in cases run without a model service."
+      }
+    },
+    {
+      "title": {
+        "zh": "异常响应不误判",
+        "en": "Odd responses are not misread"
+      },
+      "body": {
+        "zh": "无文本的补全或错误响应体报告为协议失败，而不是能力损失。",
+        "en": "A completion without usable text, or an error envelope, is reported as a protocol failure, not capability loss."
       }
     }
   ],
@@ -251,6 +261,6 @@
     }
   ],
   "footer": {
-    "tag": "0.3.0 · Python 3.12+ · MIT"
+    "tag": "0.4.0 · Python 3.12+ · MIT"
   }
 }

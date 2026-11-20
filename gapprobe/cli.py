@@ -139,6 +139,10 @@ def bench():
         f"Attribution accuracy: {correct}/{total} ({pct:.0f}%)"
         f" — {'beats' if pct > 50 else 'FAILS'} random guess (>50%)[/bold {'green' if pct > 50 else 'red'}]"
     )
+    if pct <= 50:
+        # The bench is the plan's kill switch: a red line that still exits 0
+        # would make the shipped CI step decorative.
+        raise typer.Exit(code=1)
 
 
 def _print_layer_table(verdict):
